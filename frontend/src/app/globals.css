@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #141414;
+  --bg-tertiary: #1e1e1e;
+  --text-primary: #ededed;
+  --text-secondary: #a0a0a0;
+  --accent-blue: #3b82f6;
+  --accent-green: #22c55e;
+  --accent-orange: #f97316;
+  --accent-red: #ef4444;
+  --accent-purple: #a855f7;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* React Flow customization */
+.react-flow__node {
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.react-flow__edge-path {
+  stroke-width: 2;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+
+/* Artifact iframe */
+.artifact-frame {
+  border: 1px solid #333;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+}
+
+/* Markdown article styling */
+.article-content h1 { font-size: 2rem; font-weight: 700; margin: 1.5rem 0 1rem; }
+.article-content h2 { font-size: 1.5rem; font-weight: 600; margin: 1.5rem 0 0.75rem; border-bottom: 1px solid #333; padding-bottom: 0.5rem; }
+.article-content h3 { font-size: 1.25rem; font-weight: 600; margin: 1.25rem 0 0.5rem; }
+.article-content p { margin: 0.75rem 0; line-height: 1.7; }
+.article-content ul, .article-content ol { margin: 0.75rem 0; padding-left: 1.5rem; }
+.article-content li { margin: 0.25rem 0; }
+.article-content blockquote { border-left: 3px solid var(--accent-blue); padding-left: 1rem; margin: 1rem 0; color: var(--text-secondary); }
+.article-content code { background: var(--bg-tertiary); padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.9em; }
+.article-content pre { background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; overflow-x: auto; }
+.article-content a { color: var(--accent-blue); text-decoration: underline; }

@@ -1,0 +1,30 @@
+{
+  "name": "writer",
+  "description": "Drafts well-structured articles from research findings with inline citations and chart placeholders",
+  "url": "http://localhost:8012",
+  "version": "1.0.0",
+  "protocolVersion": "0.3",
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false,
+    "stateTransitionHistory": true
+  },
+  "defaultInputModes": ["text/plain", "application/json"],
+  "defaultOutputModes": ["application/json"],
+  "skills": [
+    {
+      "id": "article_writing",
+      "name": "Article Writing",
+      "description": "Produces structured Markdown articles with inline [n] citations and {{chart:id}} / {{artifact:id}} placeholders",
+      "tags": ["writing", "article", "drafting", "citations"],
+      "examples": ["Write a 1500-word article on transformer attention for CS undergraduates"]
+    },
+    {
+      "id": "content_revision",
+      "name": "Content Revision",
+      "description": "Revises article drafts based on critic feedback, improving accuracy and quality",
+      "tags": ["revision", "editing", "improvement"],
+      "examples": ["Revise article to fix ungrounded claims identified by critic"]
+    }
+  ]
+}

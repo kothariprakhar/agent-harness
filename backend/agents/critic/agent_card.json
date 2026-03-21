@@ -1,0 +1,30 @@
+{
+  "name": "critic",
+  "description": "Evaluates articles for hallucination, citation accuracy, claim grounding, internal consistency, and audience alignment",
+  "url": "http://localhost:8013",
+  "version": "1.0.0",
+  "protocolVersion": "0.3",
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false,
+    "stateTransitionHistory": true
+  },
+  "defaultInputModes": ["text/plain", "application/json"],
+  "defaultOutputModes": ["application/json"],
+  "skills": [
+    {
+      "id": "article_evaluation",
+      "name": "Article Evaluation",
+      "description": "Evaluates article quality with 5 quantified metrics: citation accuracy, claim grounding, internal consistency, audience alignment, completeness",
+      "tags": ["evaluation", "quality", "scoring", "metrics"],
+      "examples": ["Evaluate this article draft against the research findings for hallucinations"]
+    },
+    {
+      "id": "hallucination_detection",
+      "name": "Hallucination Detection",
+      "description": "Identifies ungrounded claims, citation errors, and factual inconsistencies",
+      "tags": ["hallucination", "verification", "fact-checking"],
+      "examples": ["Check if all claims in the article are supported by the provided research"]
+    }
+  ]
+}

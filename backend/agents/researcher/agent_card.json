@@ -1,0 +1,30 @@
+{
+  "name": "researcher",
+  "description": "Performs deep web research, source gathering, and fact extraction with verbatim quotes",
+  "url": "http://localhost:8011",
+  "version": "1.0.0",
+  "protocolVersion": "0.3",
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false,
+    "stateTransitionHistory": true
+  },
+  "defaultInputModes": ["text/plain", "application/json"],
+  "defaultOutputModes": ["application/json"],
+  "skills": [
+    {
+      "id": "web_research",
+      "name": "Web Research",
+      "description": "Searches the web, fetches page content, and extracts source-attributed findings with verbatim quotes",
+      "tags": ["research", "search", "fact-finding", "citations"],
+      "examples": ["Research transformer attention mechanisms for a technical article"]
+    },
+    {
+      "id": "fact_extraction",
+      "name": "Fact Extraction",
+      "description": "Extracts structured factual claims from web content with source attribution",
+      "tags": ["extraction", "facts", "grounding"],
+      "examples": ["Extract key findings from these research papers about BERT"]
+    }
+  ]
+}

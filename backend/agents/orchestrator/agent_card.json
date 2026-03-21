@@ -1,0 +1,23 @@
+{
+  "name": "orchestrator",
+  "description": "Decomposes user prompts into task DAGs, discovers and dispatches to specialist agents, manages quality loops",
+  "url": "http://localhost:8010",
+  "version": "1.0.0",
+  "protocolVersion": "0.3",
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false,
+    "stateTransitionHistory": true
+  },
+  "defaultInputModes": ["text/plain", "application/json"],
+  "defaultOutputModes": ["application/json"],
+  "skills": [
+    {
+      "id": "pipeline_orchestration",
+      "name": "Pipeline Orchestration",
+      "description": "Orchestrates end-to-end deep research to publishable content pipeline with quality control",
+      "tags": ["orchestration", "pipeline", "coordination"],
+      "examples": ["Write a deep dive on transformer attention mechanisms for CS undergraduates"]
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "name": "data_analyst",
+  "description": "Creates interactive data visualizations (Plotly charts) and concept explainer artifacts (self-contained HTML) from research findings",
+  "url": "http://localhost:8014",
+  "version": "1.0.0",
+  "protocolVersion": "0.3",
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false,
+    "stateTransitionHistory": true
+  },
+  "defaultInputModes": ["text/plain", "application/json"],
+  "defaultOutputModes": ["application/json"],
+  "skills": [
+    {
+      "id": "data_visualization",
+      "name": "Data Visualization",
+      "description": "Creates interactive Plotly.js chart specs from quantitative research data",
+      "tags": ["charts", "plotly", "visualization", "data"],
+      "examples": ["Create a bar chart comparing transformer model sizes from 2017-2024"]
+    },
+    {
+      "id": "concept_explanation",
+      "name": "Interactive Concept Explainer",
+      "description": "Generates self-contained HTML/CSS/JS artifacts that interactively explain concepts with animations, sliders, and draggable elements",
+      "tags": ["artifacts", "interactive", "education", "explanation"],
+      "examples": ["Create an interactive visualization of how self-attention computes weights"]
+    }
+  ]
+}
