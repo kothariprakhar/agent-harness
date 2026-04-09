@@ -1,0 +1,113 @@
+version: "3.9"
+
+# One-command startup: docker compose up
+# Requires: GEMINI_API_KEY in .env at repo root
+
+x-backend-common: &backend-common
+  build:
+    context: ./backend
+    dockerfile: Dockerfile
+  environment:
+    - GEMINI_API_KEY=${GEMINI_API_KEY}
+    - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
+    - GEMINI_RPM_LIMIT=${GEMINI_RPM_LIMIT:-10}
+    - GEMINI_RPD_LIMIT=${GEMINI_RPD_LIMIT:-250}
+  restart: unless-stopped
+
+services:
+  researcher:
+    <<: *backend-common
+    command: python -m agents.researcher.main
+    ports:
+      - "8011:8011"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8011/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  writer:
+    <<: *backend-common
+    command: python -m agents.writer.main
+    ports:
+      - "8012:8012"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8012/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  critic:
+    <<: *backend-common
+    command: python -m agents.critic.main
+    ports:
+      - "8013:8013"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8013/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  data_analyst:
+    <<: *backend-common
+    command: python -m agents.data_analyst.main
+    ports:
+      - "8014:8014"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8014/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  orchestrator:
+    <<: *backend-common
+    command: python -m agents.orchestrator.main
+    ports:
+      - "8010:8010"
+    depends_on:
+      researcher:
+        condition: service_healthy
+      writer:
+        condition: service_healthy
+      critic:
+        condition: service_healthy
+      data_analyst:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8010/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  gateway:
+    <<: *backend-common
+    command: python -m gateway.main
+    ports:
+      - "8000:8000"
+    depends_on:
+      orchestrator:
+        condition: service_healthy
+    volumes:
+      - kb_data:/app/knowledge_base/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://gateway:8000
+    depends_on:
+      gateway:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  kb_data:
+    # Persists Knowledge Base uploads across container restarts

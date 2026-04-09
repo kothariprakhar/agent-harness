@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from pathlib import Path
@@ -87,8 +88,14 @@ async def send_a2a_message(
     task_id: str = "",
     metadata: Optional[dict] = None,
     timeout: float = 120.0,
+    max_retries: int = 3,
+    retry_backoff: float = 2.0,
 ) -> JSONRPCResponse:
-    """Send a JSON-RPC request to an A2A agent and return the response."""
+    """Send a JSON-RPC request to an A2A agent and return the response.
+
+    Retries on transient network errors (connection refused, timeout, 5xx) with
+    exponential backoff. Does NOT retry on 4xx client errors.
+    """
     request = build_jsonrpc_request(
         method="SendMessage",
         message_text=message_text,
@@ -98,14 +105,39 @@ async def send_a2a_message(
         metadata=metadata,
     )
 
-    async with httpx.AsyncClient(timeout=timeout) as client:
-        resp = await client.post(
-            agent_url,
-            json=request.model_dump(),
-            headers={"Content-Type": "application/json"},
-        )
-        resp.raise_for_status()
-        return JSONRPCResponse.model_validate(resp.json())
+    last_exc: Exception = RuntimeError("No attempts made")
+    for attempt in range(max_retries):
+        try:
+            async with httpx.AsyncClient(timeout=timeout) as client:
+                resp = await client.post(
+                    agent_url,
+                    json=request.model_dump(),
+                    headers={"Content-Type": "application/json"},
+                )
+                # Don't retry client errors (4xx)
+                if 400 <= resp.status_code < 500:
+                    resp.raise_for_status()
+                # Retry server errors (5xx)
+                if resp.status_code >= 500:
+                    raise httpx.HTTPStatusError(
+                        f"Server error {resp.status_code}", request=resp.request, response=resp
+                    )
+                return JSONRPCResponse.model_validate(resp.json())
+        except (httpx.ConnectError, httpx.TimeoutException, httpx.HTTPStatusError) as exc:
+            last_exc = exc
+            if attempt < max_retries - 1:
+                wait = retry_backoff ** attempt
+                logger.warning(
+                    f"A2A call to {agent_url} failed (attempt {attempt + 1}/{max_retries}): "
+                    f"{exc}. Retrying in {wait:.1f}s..."
+                )
+                await asyncio.sleep(wait)
+            else:
+                logger.error(
+                    f"A2A call to {agent_url} failed after {max_retries} attempts: {exc}"
+                )
+
+    raise last_exc
 
 
 async def send_a2a_streaming(

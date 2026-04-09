@@ -149,21 +149,30 @@ class OrchestratorExecutor(AgentExecutor):
                 "artifacts": [],
             }
 
-        # Step 3: Data Analysis (charts + artifacts)
+        # Step 3: Data Analysis (charts + artifacts) — optional, degrades gracefully
         await self._emit_event("message_sent", "orchestrator", "Dispatching visualization task")
-        da_response = await send_a2a_message(
-            agent_url=WORKER_AGENT_URLS["data_analyst"],
-            message_data={
-                "topic": prompt,
-                "research_findings": [f.model_dump() for f in research_output.findings],
-                "sections": plan.get("article_outline", []),
-                "audience": audience,
-            },
-            context_id=context_id,
-            metadata={"parentTaskId": task_id},
-        )
-        da_data = _extract_artifact_data(da_response.model_dump())
-        da_output = DataAnalystOutput.model_validate(da_data) if da_data else DataAnalystOutput()
+        da_output = DataAnalystOutput()
+        try:
+            da_response = await send_a2a_message(
+                agent_url=WORKER_AGENT_URLS["data_analyst"],
+                message_data={
+                    "topic": prompt,
+                    "research_findings": [f.model_dump() for f in research_output.findings],
+                    "sections": plan.get("article_outline", []),
+                    "audience": audience,
+                },
+                context_id=context_id,
+                metadata={"parentTaskId": task_id},
+            )
+            da_data = _extract_artifact_data(da_response.model_dump())
+            if da_data:
+                da_output = DataAnalystOutput.model_validate(da_data)
+        except Exception as exc:
+            logger.warning(f"Data Analyst unreachable or failed, continuing without charts: {exc}")
+            await self._emit_event(
+                "task_status", "orchestrator",
+                "Data Analyst unavailable — continuing without visualizations",
+            )
 
         await self._emit_event(
             "message_received", "data_analyst",
