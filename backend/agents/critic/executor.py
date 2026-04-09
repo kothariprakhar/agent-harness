@@ -14,6 +14,7 @@ from agents.critic.prompts import (
     CHECK_CONSISTENCY_PROMPT,
     EVALUATE_AUDIENCE_PROMPT,
     EVALUATE_COMPLETENESS_PROMPT,
+    EVALUATE_STYLE_MATCH_PROMPT,
 )
 from shared.gemini_client import get_gemini_client
 from shared.models import CriticReport, CriticIssue, TaskState, new_id
@@ -60,6 +61,7 @@ class CriticExecutor(AgentExecutor):
         audience = message_data.get("audience", "general")
         sections = message_data.get("sections", [])
         word_count = message_data.get("word_count", 0)
+        style_guide = message_data.get("style_guide")
 
         issues: list[CriticIssue] = []
         all_suggestions: list[str] = []
@@ -214,6 +216,26 @@ class CriticExecutor(AgentExecutor):
             for aspect in completeness_result.get("missing_aspects", []):
                 all_suggestions.append(f"Consider covering: {aspect}")
 
+        # ── 7. Style match (only when KB is active) ──────────────────────
+        style_match = 0.0
+        if style_guide and isinstance(style_guide, dict):
+            style_text = style_guide.get("full_style_prompt", "")
+            if style_text:
+                style_resp = await client.generate(
+                    prompt=EVALUATE_STYLE_MATCH_PROMPT.format(
+                        style_guide_text=style_text,
+                        article_excerpt=article_markdown[:4000],
+                    ),
+                    system_prompt=CRITIC_SYSTEM_PROMPT,
+                    agent_name="critic",
+                    temperature=0.3,
+                )
+                style_result = _safe_json_parse(style_resp.text)
+                if isinstance(style_result, dict):
+                    style_match = float(style_result.get("overall", 0.0))
+                    for s in style_result.get("suggestions", []):
+                        all_suggestions.append(f"[Style] {s}")
+
         # ── Compute overall score and pass/fail ─────────────────────────
         overall = (
             citation_accuracy * 0.30
@@ -240,6 +262,7 @@ class CriticExecutor(AgentExecutor):
             audience_alignment=round(audience_alignment, 3),
             completeness=round(completeness, 3),
             overall_score=round(overall, 3),
+            style_match=round(style_match, 3),
             issues=[CriticIssue(**i.model_dump()) for i in issues],
             suggestions=all_suggestions,
             revision_required=not passed,

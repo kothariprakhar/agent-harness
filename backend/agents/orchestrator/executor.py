@@ -93,6 +93,7 @@ class OrchestratorExecutor(AgentExecutor):
         prompt = message_text or message_data.get("prompt", "")
         audience = message_data.get("audience", "general")
         tone = message_data.get("tone", "informative")
+        style_guide = message_data.get("style_guide")  # CompositeStyleGuide dict or None
 
         if not prompt:
             return {
@@ -185,6 +186,8 @@ class OrchestratorExecutor(AgentExecutor):
                 "chart_specs": [c.model_dump() for c in da_output.charts],
                 "concept_artifacts": [a.model_dump() for a in da_output.artifacts],
             }
+            if style_guide:
+                write_data["style_guide"] = style_guide
             if critic_report and previous_draft:
                 write_data["revision_feedback"] = critic_report.model_dump()
                 write_data["previous_draft"] = previous_draft
@@ -217,9 +220,7 @@ class OrchestratorExecutor(AgentExecutor):
 
             # Critique
             await self._emit_event("message_sent", "orchestrator", "Dispatching evaluation task")
-            critic_response = await send_a2a_message(
-                agent_url=WORKER_AGENT_URLS["critic"],
-                message_data={
+            critic_data_msg: dict = {
                     "article_markdown": article_draft.markdown,
                     "citations": [c.model_dump() for c in article_draft.citations],
                     "research_findings": [f.model_dump() for f in research_output.findings],
@@ -227,7 +228,13 @@ class OrchestratorExecutor(AgentExecutor):
                     "audience": audience,
                     "sections": article_draft.sections,
                     "word_count": article_draft.word_count,
-                },
+            }
+            if style_guide:
+                critic_data_msg["style_guide"] = style_guide
+
+            critic_response = await send_a2a_message(
+                agent_url=WORKER_AGENT_URLS["critic"],
+                message_data=critic_data_msg,
                 context_id=context_id,
                 metadata={"parentTaskId": task_id},
             )

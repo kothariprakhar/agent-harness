@@ -15,24 +15,32 @@ logger = logging.getLogger(__name__)
 ORCHESTRATOR_URL = f"http://localhost:{ORCHESTRATOR_PORT}"
 
 
-async def run_pipeline(request: PipelineRequest) -> PipelineResult:
+async def run_pipeline(
+    request: PipelineRequest,
+    style_guide: dict | None = None,
+) -> PipelineResult:
     """Run the full research-to-article pipeline via the Orchestrator agent."""
 
     await ws_manager.emit_event("pipeline_started", {
         "prompt": request.prompt,
         "audience": request.audience,
         "tone": request.tone,
+        "use_knowledge_base": request.use_knowledge_base,
     })
+
+    message_data: dict = {
+        "prompt": request.prompt,
+        "audience": request.audience,
+        "tone": request.tone,
+    }
+    if style_guide:
+        message_data["style_guide"] = style_guide
 
     try:
         response = await send_a2a_message(
             agent_url=ORCHESTRATOR_URL,
             message_text=request.prompt,
-            message_data={
-                "prompt": request.prompt,
-                "audience": request.audience,
-                "tone": request.tone,
-            },
+            message_data=message_data,
             timeout=600.0,  # 10 min max for full pipeline
         )
 

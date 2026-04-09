@@ -38,6 +38,7 @@ export interface CriticReport {
   audience_alignment: number;
   completeness: number;
   overall_score: number;
+  style_match: number;
   issues: CriticIssue[];
   suggestions: string[];
   revision_required: boolean;
@@ -89,6 +90,42 @@ export interface PipelineEvent {
     message?: string;
     [key: string]: any;
   };
+}
+
+// ── Knowledge Base Types ──────────────────────────────────────────────────
+
+export interface StyleProfile {
+  tone_descriptors: string[];
+  sentence_style: string;
+  vocabulary_level: string;
+  formatting_patterns: string[];
+  structural_template: string[];
+  exemplary_passages: string[];
+  avg_sentence_length: number;
+  avg_section_count: number;
+  uses_citations: boolean;
+  uses_subheadings: boolean;
+}
+
+export interface KBArticle {
+  id: string;
+  filename: string;
+  title: string;
+  upload_date: string;
+  tags: string[];
+  word_count: number;
+  format: string;
+  style_profile: StyleProfile | null;
+}
+
+export interface CompositeStyleGuide {
+  article_count: number;
+  avg_tone: string[];
+  avg_vocabulary_level: string;
+  structural_template: string[];
+  formatting_rules: string[];
+  exemplary_passages: string[];
+  full_style_prompt: string;
 }
 
 export type AgentName = "orchestrator" | "researcher" | "writer" | "critic" | "data_analyst";

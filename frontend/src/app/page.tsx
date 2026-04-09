@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import PromptInput from "@/components/PromptInput";
 import MessageStream from "@/components/MessageStream";
 import TokenTracker from "@/components/TokenTracker";
 import QualityScores from "@/components/QualityScores";
 import ArticleRenderer from "@/components/ArticleRenderer";
+import KnowledgeBasePanel from "@/components/KnowledgeBasePanel";
 import { usePipeline } from "@/hooks/usePipeline";
 import { useWebSocket } from "@/hooks/useWebSocket";
 
@@ -18,12 +19,28 @@ type Tab = "pipeline" | "article" | "evaluation";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>("pipeline");
+  const [kbAvailable, setKbAvailable] = useState(false);
+  const [kbTags, setKbTags] = useState<string[]>([]);
   const { status, result, error, run, reset } = usePipeline();
   const { connected, events, clearEvents } = useWebSocket();
 
-  const handleSubmit = (prompt: string, audience: string, tone: string) => {
+  const handleKBStateChange = useCallback(
+    (hasArticles: boolean, tags: string[]) => {
+      setKbAvailable(hasArticles);
+      setKbTags(tags);
+    },
+    []
+  );
+
+  const handleSubmit = (
+    prompt: string,
+    audience: string,
+    tone: string,
+    useKnowledgeBase: boolean,
+    selectedKbTags: string[],
+  ) => {
     clearEvents();
-    run(prompt, audience, tone);
+    run(prompt, audience, tone, useKnowledgeBase, selectedKbTags);
   };
 
   const handleReset = () => {
@@ -62,11 +79,18 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Knowledge Base */}
+      <div className="mb-4">
+        <KnowledgeBasePanel onKBStateChange={handleKBStateChange} />
+      </div>
+
       {/* Prompt Input */}
       <div className="mb-6">
         <PromptInput
           onSubmit={handleSubmit}
           disabled={status === "running"}
+          kbAvailable={kbAvailable}
+          availableTags={kbTags}
         />
       </div>
 

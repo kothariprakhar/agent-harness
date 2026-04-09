@@ -53,6 +53,11 @@ export default function QualityScores({ report }: Props) {
 
       <div className="border-t border-[#333] pt-2">
         <ScoreGauge label="Overall" value={report.overall_score} threshold={0.80} />
+        {report.style_match > 0 && (
+          <div className="mt-2">
+            <ScoreGauge label="Style Match" value={report.style_match} threshold={0.70} />
+          </div>
+        )}
       </div>
 
       {report.issues.length > 0 && (

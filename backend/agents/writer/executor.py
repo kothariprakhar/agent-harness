@@ -7,7 +7,7 @@ import logging
 import re
 
 from agents.base_agent import AgentExecutor
-from agents.writer.prompts import WRITER_SYSTEM_PROMPT, WRITE_ARTICLE_PROMPT, REVISE_ARTICLE_PROMPT
+from agents.writer.prompts import WRITER_SYSTEM_PROMPT, WRITE_ARTICLE_PROMPT, REVISE_ARTICLE_PROMPT, STYLE_GUIDE_BLOCK
 from shared.gemini_client import get_gemini_client
 from shared.models import (
     ArticleDraft,
@@ -107,6 +107,14 @@ class WriterExecutor(AgentExecutor):
         artifacts = message_data.get("concept_artifacts", [])
         revision_feedback = message_data.get("revision_feedback")
         previous_draft = message_data.get("previous_draft")
+        style_guide = message_data.get("style_guide")
+
+        # Build system prompt — conditionally inject style guide
+        system_prompt = WRITER_SYSTEM_PROMPT
+        if style_guide and isinstance(style_guide, dict):
+            style_text = style_guide.get("full_style_prompt", "")
+            if style_text:
+                system_prompt += STYLE_GUIDE_BLOCK.format(style_guide_text=style_text)
 
         if revision_feedback and previous_draft:
             # Revision pass
@@ -138,7 +146,7 @@ class WriterExecutor(AgentExecutor):
 
         resp = await client.generate(
             prompt=prompt,
-            system_prompt=WRITER_SYSTEM_PROMPT,
+            system_prompt=system_prompt,
             agent_name="writer",
             temperature=0.7,
         )

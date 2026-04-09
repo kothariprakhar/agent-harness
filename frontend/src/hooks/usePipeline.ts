@@ -12,13 +12,19 @@ export function usePipeline() {
   const [error, setError] = useState<string | null>(null);
 
   const run = useCallback(
-    async (prompt: string, audience: string, tone: string) => {
+    async (
+      prompt: string,
+      audience: string,
+      tone: string,
+      useKnowledgeBase: boolean = false,
+      kbTags: string[] = [],
+    ) => {
       setStatus("running");
       setError(null);
       setResult(null);
 
       try {
-        const response = await generateArticle(prompt, audience, tone);
+        const response = await generateArticle(prompt, audience, tone, useKnowledgeBase, kbTags);
         setResult(response.result);
         setStatus("completed");
       } catch (err: any) {

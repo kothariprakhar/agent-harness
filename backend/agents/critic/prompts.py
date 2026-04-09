@@ -67,6 +67,25 @@ Return JSON: {{"vocabulary_appropriateness": 0.0-1.0, "explanation_depth": 0.0-1
 Return ONLY valid JSON.
 """
 
+EVALUATE_STYLE_MATCH_PROMPT = """\
+Evaluate how well this article matches the target writing style described below.
+
+Target style guide:
+{style_guide_text}
+
+Article excerpt (first 2000 words):
+{article_excerpt}
+
+Score the following (0.0-1.0):
+1. tone_match: Does the article's tone match the target tone descriptors?
+2. structure_match: Does the article follow the target structural template?
+3. formatting_match: Does the article use the target formatting patterns?
+4. voice_match: Does the writing voice feel similar to the reference passages?
+
+Return JSON: {{"tone_match": 0.0-1.0, "structure_match": 0.0-1.0, "formatting_match": 0.0-1.0, "voice_match": 0.0-1.0, "overall": 0.0-1.0, "suggestions": ["..."]}}
+Return ONLY valid JSON.
+"""
+
 EVALUATE_COMPLETENESS_PROMPT = """\
 Given the original research topic and the article, evaluate how completely the article covers the topic.
 

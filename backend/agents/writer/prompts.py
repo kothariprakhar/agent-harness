@@ -68,3 +68,11 @@ Instructions:
 
 Return the revised article as Markdown text with the same JSON metadata block at the end.
 """
+
+STYLE_GUIDE_BLOCK = """
+
+## Style Guide (from reference articles)
+{style_guide_text}
+
+Apply this style guide to your writing. Match the tone, structure, and formatting patterns described above.
+"""

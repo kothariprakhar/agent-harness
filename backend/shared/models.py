@@ -91,6 +91,7 @@ class CriticReport(BaseModel):
     completeness: float = Field(default=0.0, ge=0.0, le=1.0)
     overall_score: float = Field(default=0.0, ge=0.0, le=1.0)
     issues: list[CriticIssue] = []
+    style_match: float = Field(default=0.0, ge=0.0, le=1.0)
     suggestions: list[str] = []
     revision_required: bool = False
 
@@ -127,6 +128,8 @@ class PipelineRequest(BaseModel):
     prompt: str
     audience: str = "general"
     tone: str = "informative"
+    use_knowledge_base: bool = False
+    kb_tags: list[str] = []
 
 
 class TokenUsage(BaseModel):
@@ -199,6 +202,42 @@ class JSONRPCResponse(BaseModel):
     id: str = ""
     result: Optional[dict] = None
     error: Optional[dict] = None
+
+
+# ── Knowledge Base ─────────────────────────────────────────────────────────
+
+class StyleProfile(BaseModel):
+    tone_descriptors: list[str] = []
+    sentence_style: str = ""
+    vocabulary_level: str = ""  # "technical" | "accessible" | "academic"
+    formatting_patterns: list[str] = []
+    structural_template: list[str] = []
+    exemplary_passages: list[str] = []
+    avg_sentence_length: float = 0.0
+    avg_section_count: int = 0
+    uses_citations: bool = False
+    uses_subheadings: bool = False
+
+
+class KnowledgeBaseArticle(BaseModel):
+    id: str = Field(default_factory=new_id)
+    filename: str = ""
+    title: str = ""
+    upload_date: str = ""
+    tags: list[str] = []
+    word_count: int = 0
+    format: str = ""  # "markdown" | "pdf" | "docx" | "html" | "txt"
+    style_profile: Optional[StyleProfile] = None
+
+
+class CompositeStyleGuide(BaseModel):
+    article_count: int = 0
+    avg_tone: list[str] = []
+    avg_vocabulary_level: str = ""
+    structural_template: list[str] = []
+    formatting_rules: list[str] = []
+    exemplary_passages: list[str] = []
+    full_style_prompt: str = ""
 
 
 # ── WebSocket Events (Gateway → Frontend) ──────────────────────────────────
